@@ -77,7 +77,7 @@ def box_area(lines: neovim.api.Buffer, top_left: Coords,
     return lines
 
 
-def with_vertical_borders(line: str, x1: str, x2: str) -> str:
+def with_vertical_borders(line: str, x1: int, x2: int) -> str:
     prefix = line[:x1]
     suffix = line[x2 + 1:]
     selected = line[x1:x2 + 1]
