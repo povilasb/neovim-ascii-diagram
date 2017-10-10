@@ -4,3 +4,4 @@ endif
 let g:loaded_ascii_diagram = 1
 
 nnoremap <c-b> :BoxWord<CR>
+vnoremap <c-b> <Esc><Esc>:BoxSelected<CR>
