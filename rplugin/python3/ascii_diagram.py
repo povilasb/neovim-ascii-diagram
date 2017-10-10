@@ -2,7 +2,7 @@
 See: https://github.com/vim-scripts/DrawIt
 '''
 
-from typing import Tuple
+from typing import Tuple, List
 
 import neovim
 
@@ -22,6 +22,37 @@ class AsciiDiagram(object):
         curr_ln = self.vim.eval('line(".")') - 1
         buff.append(line_bellow, curr_ln)
         buff.append(line_bellow, curr_ln + 2)
+
+    @neovim.command('BoxSelected')
+    def box_selected(self) -> None:
+        lpos = Position(self.vim.eval('getpos("\'<")'))
+        rpos = Position(self.vim.eval('getpos("\'>")'))
+        self.vim.current.line = str(lpos.column)
+
+
+class Position:
+    """Wraps vim function getpos() result and makes it more readable.
+
+    Vim docs:
+        getpos({expr})
+
+        The result is a |List| with four numbers:
+            [bufnum, lnum, col, off]
+        "bufnum" is zero, unless a mark like '0 or 'A is used, then it
+        is the buffer number of the mark.
+        "lnum" and "col" are the position in the buffer.  The first
+        column is 1.
+        The "off" number is zero, unless 'virtualedit' is used.  Then
+        it is the offset in screen columns from the start of the
+        character.  E.g., a position within a <Tab> or after the last
+        character.
+    """
+
+    def __init__(self, params: List[int]) -> None:
+        self.buff = params[0]
+        self.line = params[1]
+        self.column = params[2]
+        self.off = params[3]
 
 
 def word_starts(line: str, char_pos: int) -> int:
