@@ -26,7 +26,11 @@ class AsciiDiagram(object):
     @neovim.command('BoxSelected')
     def box_selected(self) -> None:
         lpos = Position(self.vim.eval('getpos("\'<")'))
+        lpos.column = min(len(self.vim.current.buffer[lpos.line - 1]),
+                          lpos.column)
         rpos = Position(self.vim.eval('getpos("\'>")'))
+        rpos.column = min(len(self.vim.current.buffer[rpos.line - 1]),
+                          rpos.column)
         box_area(self.vim.current.buffer,
                  Coords(lpos.column - 1, lpos.line - 1),
                  Coords(rpos.column - 1, rpos.line - 1))
@@ -63,14 +67,13 @@ class Coords:
         self.y = y
 
 
-def box_area(lines: List[str], top_left: Coords,
+def box_area(lines: neovim.api.Buffer, top_left: Coords,
              bottom_right: Coords) -> List[str]:
-    y1 = top_left.y
-    for y in range(top_left.y, bottom_right.y  + 1):
+    for y in range(top_left.y, bottom_right.y + 1):
         lines[y] = with_vertical_borders(lines[y], top_left.x, bottom_right.x)
     ln_border = horizontal_border(top_left.x, bottom_right.x)
-    lines.insert(y1, ln_border)
-    lines.insert(bottom_right.y + 2, ln_border)
+    lines.append(ln_border, top_left.y)
+    lines.append(ln_border, bottom_right.y + 2)
     return lines
 
 
@@ -123,10 +126,8 @@ def box_word(ln: str, char_pos: int) -> Tuple[str, str]:
 
 def test() -> None:
     vim = neovim.attach('socket', path='/tmp/nvim')
-    curr_col = vim.eval('col(".")')
-    line_bellow, new_line = box_word(vim.current.line, curr_col)
-    vim.current.line = new_line
-    buff = vim.current.buffer
-    curr_ln = vim.eval('line(".")') - 1
-    buff.append(line_bellow, curr_ln)
-    buff.append(line_bellow, curr_ln + 2)
+    lpos = Position([0, 1, 1, 0])
+    rpos = Position([0, 2, 10, 0])
+    box_area(vim.current.buffer,
+             Coords(lpos.column - 1, lpos.line - 1),
+             Coords(rpos.column - 1, rpos.line - 1))

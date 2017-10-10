@@ -4,11 +4,17 @@ from ascii_diagram import box_area, Coords, horizontal_border, \
     with_vertical_borders
 
 
+class MockBuffer(list):
+    def append(self, line: str, index: int=-1):
+        self.insert(index, line)
+
+
 def describe_box_area():
     def describe_when_single_line_is_selected():
         def describe_when_all_columns_selected():
             def it_is_decorated_with_borders():
-                boxed = box_area(['hello'], Coords(0, 0), Coords(4, 0))
+                boxed = box_area(
+                    MockBuffer(['hello']), Coords(0, 0), Coords(4, 0))
 
                 assert_that(boxed, is_([
                     '+-------+',
@@ -18,7 +24,8 @@ def describe_box_area():
 
         def describe_when_selected_columns_are_surrounded_by_other_characters():
             def it_wraps_only_those_columns():
-                boxed = box_area(['hello'], Coords(1, 0), Coords(3, 0))
+                boxed = box_area(MockBuffer(['hello']), Coords(1, 0),
+                                 Coords(3, 0))
 
                 assert_that(boxed, is_([
                     ' +-----+',
@@ -29,7 +36,8 @@ def describe_box_area():
     def describe_when_multiple_lines_are_selected():
         def describe_when_all_columns_selected():
             def it_is_decorated_with_borders():
-                boxed = box_area(['hello', 'world'], Coords(0, 0), Coords(4, 1))
+                boxed = box_area(MockBuffer(['hello', 'world']),
+                                 Coords(0, 0), Coords(4, 1))
 
                 assert_that(boxed, is_([
                     '+-------+',
