@@ -27,7 +27,9 @@ class AsciiDiagram(object):
     def box_selected(self) -> None:
         lpos = Position(self.vim.eval('getpos("\'<")'))
         rpos = Position(self.vim.eval('getpos("\'>")'))
-        self.vim.current.line = str(lpos.column)
+        box_area(self.vim.current.buffer,
+                 Coords(lpos.column - 1, lpos.line - 1),
+                 Coords(rpos.column - 1, rpos.line - 1))
 
 
 class Position:
@@ -53,6 +55,36 @@ class Position:
         self.line = params[1]
         self.column = params[2]
         self.off = params[3]
+
+
+class Coords:
+    def __init__(self, x: int, y: int) -> None:
+        self.x = x
+        self.y = y
+
+
+def box_area(lines: List[str], top_left: Coords,
+             bottom_right: Coords) -> List[str]:
+    y1 = top_left.y
+    for y in range(top_left.y, bottom_right.y  + 1):
+        lines[y] = with_vertical_borders(lines[y], top_left.x, bottom_right.x)
+    ln_border = horizontal_border(top_left.x, bottom_right.x)
+    lines.insert(y1, ln_border)
+    lines.insert(bottom_right.y + 2, ln_border)
+    return lines
+
+
+def with_vertical_borders(line: str, x1: str, x2: str) -> str:
+    prefix = line[:x1]
+    suffix = line[x2 + 1:]
+    selected = line[x1:x2 + 1]
+    return '{}| {} |{}'.format(prefix, selected, suffix)
+
+
+def horizontal_border(x1: int, x2: int) -> str:
+    padding = ' ' * x1
+    border = '-' * (x2 - x1 + 3)
+    return '{}+{}+'.format(padding, border)
 
 
 def word_starts(line: str, char_pos: int) -> int:
